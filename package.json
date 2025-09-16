@@ -1,0 +1,20 @@
+{
+  "name": "time-management-app",
+  "version": "1.0.0",
+  "description": "Time management application using AWS services with LocalStack",
+  "main": "app.py",
+  "scripts": {
+    "deploy": "cdk deploy",
+    "synth": "cdk synth",
+    "bootstrap": "cdk bootstrap",
+    "destroy": "cdk destroy"
+  },
+  "dependencies": {
+    "aws-cdk-lib": "^2.100.0",
+    "constructs": "^10.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^5.0.0"
+  }
+}

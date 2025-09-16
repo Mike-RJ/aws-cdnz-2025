@@ -1,0 +1,19 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.venv/
+venv/
+
+# Node
+node_modules/
+
+# CDK
+cdk.out/
+cdk/cdk.out/
+
+# OS/editor
+.DS_Store
+.idea/
+.vscode/

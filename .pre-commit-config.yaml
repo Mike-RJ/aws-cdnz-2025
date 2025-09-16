@@ -1,0 +1,74 @@
+repos:
+  - repo: https://github.com/pycqa/isort
+    rev: 5.13.2
+    hooks:
+      - id: isort
+        files: ^(lambda/|cdk/|tests/).*\.py$
+        args: [--profile=black]
+
+  - repo: https://github.com/pre-commit/mirrors-prettier
+    rev: v4.0.0-alpha.8
+    hooks:
+      - id: prettier
+        files: ^frontend/.*\.(js|css|html)$
+        exclude: ^frontend/config\.js$
+
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.5.0
+    hooks:
+      - id: trailing-whitespace
+        exclude: ^(cdk/cdk\.out/|node_modules/)
+      - id: end-of-file-fixer
+        exclude: ^(cdk/cdk\.out/|node_modules/)
+      - id: check-yaml
+      - id: check-json
+        exclude: ^cdk/cdk\.out/
+      - id: check-merge-conflict
+      - id: check-added-large-files
+        exclude: ^(cdk/cdk\.out/|node_modules/)
+
+  - repo: local
+    hooks:
+      - id: cdk-synth
+        name: CDK synth validation
+        entry: bash
+        language: system
+        args:
+          - -c
+          - |
+            set -e
+            export CDK_DISABLE_CONTEXT_SAVE=1
+            export AWS_CDK_DISABLE_VERSION_CHECK=1
+            TMPDIR=$(mktemp -d)
+            cdk synth -o "$TMPDIR" --app "python cdk/app.py" >/dev/null 2>&1
+            rm -rf "$TMPDIR"
+        pass_filenames: false
+        always_run: true
+
+  - repo: local
+    hooks:
+      - id: python-tests
+        name: Run Python unit tests
+        entry: python
+        language: system
+        args:
+          - -m
+          - pytest
+          - tests/test_lambda_unit.py
+          - -v
+          - -q
+          - -p
+          - "no:cacheprovider"
+        files: ^(lambda/|tests/).*\.py$
+        pass_filenames: false
+        require_serial: true
+
+      - id: infrastructure-tests
+        name: Run infrastructure tests
+        entry: bash
+        language: system
+        args: [-c, './scripts/run-infrastructure-tests.sh']
+        files: ^(cdk/|lambda/).*$
+        pass_filenames: false
+        require_serial: true
+        stages: [pre-push]
