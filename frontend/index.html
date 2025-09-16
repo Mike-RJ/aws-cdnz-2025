@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Time Management App</title>
+    <link rel="stylesheet" href="styles.css" />
+    <script src="config.js"></script>
+  </head>
+  <body>
+    <div class="container">
+      <h1>Time Management Application</h1>
+
+      <div class="timer-section">
+        <h2>Current Timer</h2>
+        <div class="timer-controls">
+          <div class="form-group">
+            <label for="project">Project:</label>
+            <input
+              type="text"
+              id="project"
+              placeholder="Enter project name"
+              required
+            />
+          </div>
+          <div class="form-group">
+            <label for="name">Task Name:</label>
+            <input
+              type="text"
+              id="name"
+              placeholder="Enter task name"
+              required
+            />
+          </div>
+          <div class="timer-display">
+            <span id="timerDisplay">00:00:00</span>
+          </div>
+          <div class="timer-buttons">
+            <button id="startBtn" class="start-btn">Start</button>
+            <button id="stopBtn" class="stop-btn" disabled>Stop</button>
+            <button id="saveBtn" class="save-btn" disabled>Save</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="entries-section">
+        <h2>Time Entries</h2>
+        <button id="refreshBtn">Refresh</button>
+        <div id="entriesList"></div>
+      </div>
+    </div>
+
+    <script src="app.js"></script>
+  </body>
+</html>

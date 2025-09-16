@@ -1,0 +1,145 @@
+name: Tests
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches: [ main]
+
+env:
+  AWS_DEFAULT_REGION: us-east-1
+  AWS_ACCESS_KEY_ID: test
+  AWS_SECRET_ACCESS_KEY: test
+  LOCALSTACK_HOST: localhost
+
+jobs:
+  static-analysis:
+    name: Pre-Commit
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Set up Node.js (for CDK hooks)
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Tooling
+        run: |
+          python -m pip install --upgrade pip
+          pip install pre-commit
+          # Pre-commit hooks expect project deps (aws_cdk, pytest, etc.)
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+          if [ -f tests/requirements.txt ]; then pip install -r tests/requirements.txt; fi
+          pip install pytest
+          # CDK CLI for synth hooks
+          npm install -g aws-cdk@2.100.0
+
+      - name: Run pre-commit (formatting, linting)
+        run: pre-commit run --all-files
+
+      - name: Python syntax check
+        run: python -m compileall -q .
+
+  sast-scan:
+    name: SAST Scans
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install bandit checkov
+          npm install -g aws-cdk@2.100.0 aws-cdk-local
+
+      - name: CDK Synth
+        run: |
+          cdklocal synth -o cdk.out --app "python cdk/app.py"
+
+      - name: Bandit
+        run: bandit -r lambda cdk -lll --exit-zero
+
+      - name: CheckOv
+        run: |
+          if [ -d cdk.out ]; then
+            checkov -d cdk.out || true
+          else
+            echo "cdk.out not found; skipping Checkov"
+          fi
+
+  infrastructure-tests:
+    name: Deployment & Integration Tests
+    runs-on: ubuntu-latest
+    needs: [ static-analysis, sast-scan ]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Start LocalStack
+        uses: LocalStack/setup-localstack@v0.2.2
+        with:
+          image-tag: 'latest'
+          install-awslocal: 'true'
+          configuration: |
+            SERVICES=apigateway,cloudformation,dynamodb,iam,lambda,logs,route53,s3,ssm,sts
+            DEBUG=1
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install runtime and test dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          if [ -f tests/requirements.txt ]; then pip install -r tests/requirements.txt; fi
+          pip install awscli-local[ver1] pytest pytest-cov
+          npm install -g aws-cdk@2.100.0 aws-cdk-local
+
+
+      - name: Wait for LocalStack
+        run: |
+          echo "Waiting for LocalStack to start..."
+          for i in {1..30}; do
+            if curl -s http://localhost:4566/_localstack/health | grep -q '"dynamodb"'; then
+              echo "LocalStack is ready!"; curl -s http://localhost:4566/_localstack/health; break;
+            fi
+            echo "Waiting... ($i/30)"; sleep 10;
+          done
+
+      - name: Bootstrap & Deploy CDK to LocalStack
+        run: |
+          cdklocal bootstrap || echo "Bootstrap may have already been done"
+          cdklocal deploy --require-approval=never --verbose --outputs-file ./cdk-outputs.json --app "python cdk/app.py"
+
+      - name: Integration Tests
+        run: |
+          python -m pytest -v tests/ --tb=short --maxfail=1
+
+      - name: Destroy stack (cleanup)
+        if: always()
+        run: cdklocal destroy --force || echo "Cleanup completed"

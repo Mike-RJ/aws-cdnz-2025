@@ -1,0 +1,163 @@
+body {
+  font-family: Arial, sans-serif;
+  line-height: 1.6;
+  margin: 0;
+  padding: 20px;
+  background-color: #f4f4f4;
+}
+
+.container {
+  max-width: 800px;
+  margin: 0 auto;
+  background: white;
+  padding: 20px;
+  border-radius: 5px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+h1,
+h2 {
+  color: #333;
+}
+
+.timer-section,
+.entries-section {
+  margin-bottom: 30px;
+}
+
+.form-group {
+  margin-bottom: 15px;
+}
+
+label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: bold;
+}
+
+input[type="text"],
+input[type="datetime-local"],
+input[type="number"] {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  box-sizing: border-box;
+}
+
+.timer-display {
+  text-align: center;
+  margin: 20px 0;
+}
+
+#timerDisplay {
+  font-size: 3em;
+  font-weight: bold;
+  color: #333;
+  font-family: "Courier New", monospace;
+}
+
+.timer-buttons {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  margin-top: 20px;
+}
+
+button {
+  color: white;
+  padding: 10px 15px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 16px;
+  background: #4caf50;
+}
+
+button:hover {
+  background: #45a049;
+}
+
+button:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+}
+
+.start-btn {
+  background: #4caf50;
+}
+
+.start-btn:hover:not(:disabled) {
+  background: #45a049;
+}
+
+.stop-btn {
+  background: #f44336;
+}
+
+.stop-btn:hover:not(:disabled) {
+  background: #da190b;
+}
+
+.save-btn {
+  background: #2196f3;
+}
+
+.save-btn:hover:not(:disabled) {
+  background: #0b7dda;
+}
+
+#refreshBtn {
+  margin-bottom: 15px;
+}
+
+.entry {
+  border: 1px solid #ddd;
+  padding: 15px;
+  margin-bottom: 10px;
+  border-radius: 4px;
+  background: #f9f9f9;
+}
+
+.entry h3 {
+  margin-top: 0;
+  color: #333;
+}
+
+.entry p {
+  margin: 5px 0;
+}
+
+.entry-buttons {
+  margin-top: 10px;
+}
+
+.entry-buttons button {
+  margin-right: 10px;
+  padding: 5px 10px;
+  font-size: 14px;
+}
+
+.edit-btn {
+  background: #2196f3;
+}
+
+.edit-btn:hover {
+  background: #0b7dda;
+}
+
+.delete-btn {
+  background: #f44336;
+}
+
+.delete-btn:hover {
+  background: #da190b;
+}
+
+#editForm {
+  display: none;
+  margin-top: 15px;
+  padding: 15px;
+  background: #e8f5e8;
+  border-radius: 4px;
+}
